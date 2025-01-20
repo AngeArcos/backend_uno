@@ -1,13 +1,19 @@
 import express from 'express';
 import { engine } from 'express-handlebars';
-import routes from './routes/views.router.js';
+//import routes from './routes/views.router.js';
+import viewsRouter from './routes/views.router.js';
 import cartsRoutes from './routes/api/carts.routes.js';
-import productsRoutes from './routes/api/product.routes.js';
+import productsRoutes from './routes/api/product.router.js';
 import path from 'path';
+import { Server as HttpServer } from 'node:http';
+import { Server as ServerIo } from 'socket.io';
 
 const PORT = 8080;
 
 const app = express();
+
+const httpServer = new HttpServer(app)
+const io = new ServerIo(httpServer)
 
 app.use(express.json());
 app.use(express.urlencoded({extended: true}))
@@ -23,7 +29,13 @@ app.set('view engine', 'hbs')
 
 app.set('views', path.join(__dirname, 'src', 'views')); 
 
-app.use('/', routes) 
+const socketMidd = (io) => (req,res, next ) => {
+    req.io = io
+    next()
+}
+app.use(socketMidd(io))
+
+app.use('/', viewsRouter) 
 app.use('/api/products', () => {})
 app.use('/api/products', () => {})
 
