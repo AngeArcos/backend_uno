@@ -1,16 +1,17 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Home</title>
-</head>
-<body>
-    <h1>Lista de productos</h1>
-    <ul>
-        {{#each products}}
-        <li>{{this}}</li>
-        {{/each}}
-    </ul>
-</body>
-</html>
+<div>
+   <h1>Hola {{user.name}} {{user.lastName}} </h1> 
+   <p>Email: {{user.email}} </p>
+   <p>Edad: {{user.age}} </p>
+   <p>Teléfono: {{user.phone}} </p>
+   {{#if isAdmin}}
+    {{!-- {{#each food}}
+    <p class="food" ><strong>Nombre de la comida: {{this.name}}  </p>
+    <p class="food" ><strong> Precio: {{this.price}} </p>
+    <br>
+    {{/each}}
+   {{else}}
+   <h2>No tienes permiso para ver el listado de comidas</h2> --}}
+   {{/if}}
+</div>
+<script src="/socket.io/socket.io.js"></script>
+<script src="/js/index.js"></script>

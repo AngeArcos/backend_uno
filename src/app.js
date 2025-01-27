@@ -1,23 +1,22 @@
 import express from 'express';
 import { engine } from 'express-handlebars';
-//import routes from './routes/views.router.js';
-import viewsRouter from './routes/views.router.js';
+import routes from './routes/views.router.js';
 import cartsRoutes from './routes/api/carts.routes.js';
-import productsRoutes from './routes/api/product.router.js';
 import path from 'path';
 import { Server as HttpServer } from 'node:http';
-import { Server as ServerIo } from 'socket.io';
+import { Server } from 'socket.io';
+import usersRoutes from './routes/api/users.routes.js';
+import productsRoutes from './routes/api/product.router.js';
 
 const PORT = 8080;
 
 const app = express();
 
 const httpServer = new HttpServer(app)
-const io = new ServerIo(httpServer)
 
 app.use(express.json());
-app.use(express.urlencoded({extended: true}))
-
+app.use(express.urlencoded({extended: true}));
+app.use(express.static('public'));
 
 const __dirname = path.dirname(new URL(import.meta.url).pathname);
 
@@ -25,24 +24,17 @@ app.engine('hbs', engine({
     extname: '.hbs' 
 }))
 
-app.set('view engine', 'hbs')
+const pathViews = path.resolve('src', 'views');
+app.set('views', pathViews); 
 
-app.set('views', path.join(__dirname, 'src', 'views')); 
+app.set('view engine', 'hbs');
 
-const socketMidd = (io) => (req,res, next ) => {
-    req.io = io
-    next()
-}
-app.use(socketMidd(io))
-
-app.use('/', viewsRouter) 
-app.use('/api/products', () => {})
-app.use('/api/products', () => {})
-
-app.use('/api/products', productsRoutes);
+app.use('/', routes) 
+app.use('api/product', productsRoutes);
 app.use('/api/carts', cartsRoutes);
+app.use('/api/users', usersRoutes);
 
-app.listen(PORT, err => {
+httpServer.listen(PORT, err => {
     if (err) {
         console.log('no se pudo iniciar el servidor:', err)
         return
@@ -50,3 +42,15 @@ app.listen(PORT, err => {
     console.log(`scuchando en ${PORT}`);
 });
 
+const socketServer = new Server(httpServer);
+
+const messages = [];
+
+socketServer.on('connection', (socket) => {
+    console.log("Cliente conectado");
+    socket.emit('message', messages); 
+    socket.on('message', (data) => { 
+        messages.push(data); 
+        socketServer.emit('message', messages); 
+    })
+})
